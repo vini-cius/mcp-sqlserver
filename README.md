@@ -3,10 +3,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.18.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
-[![npm version](https://img.shields.io/npm/v/sqlserver-mcp-service.svg)](https://www.npmjs.com/package/sqlserver-mcp-service)
-[![GitHub last commit](https://img.shields.io/github/last-commit/vini-cius/mcp-sqlserver)](https://github.com/vini-cius/mcp-sqlserver/commits/main)
-[![GitHub issues](https://img.shields.io/github/issues/vini-cius/mcp-sqlserver)](https://github.com/vini-cius/mcp-sqlserver/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/vini-cius/mcp-sqlserver)](https://github.com/vini-cius/mcp-sqlserver/pulls)
 
 A secure and robust Model Context Protocol (MCP) service for executing SQL Server queries through a standardized interface. This service provides a safe way to interact with SQL Server databases while preventing destructive operations and SQL injection attacks.
 
@@ -305,12 +301,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Model Context Protocol](https://modelcontextprotocol.io/) for the MCP specification
 - [mssql](https://github.com/tediousjs/node-mssql) for SQL Server connectivity
 - [Zod](https://zod.dev/) for runtime type validation
-
-## 📊 Project Status
-
-[![GitHub last commit](https://img.shields.io/github/last-commit/vini-cius/mcp-sqlserver)](https://github.com/vini-cius/mcp-sqlserver/commits/main)
-[![GitHub issues](https://img.shields.io/github/issues/vini-cius/mcp-sqlserver)](https://github.com/vini-cius/mcp-sqlserver/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/vini-cius/mcp-sqlserver)](https://github.com/vini-cius/mcp-sqlserver/pulls)
 
 ---
 
