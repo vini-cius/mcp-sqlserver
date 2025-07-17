@@ -1,5 +1,7 @@
 import sql from 'mssql'
 
+import { env } from './env'
+
 export class DatabaseConnection {
   private pool: sql.ConnectionPool | null = null
   private config: sql.config
@@ -56,11 +58,11 @@ export class DatabaseConnection {
 
 export function createDatabaseConfig(): sql.config {
   return {
-    server: process.env.SQL_SERVER || 'localhost',
-    database: process.env.SQL_DATABASE || 'master',
-    user: process.env.SQL_USER,
-    password: process.env.SQL_PASSWORD,
-    port: parseInt(process.env.SQL_PORT || '1433'),
+    server: env.SQL_SERVER || 'localhost',
+    database: env.SQL_DATABASE || 'master',
+    user: env.SQL_USER,
+    password: env.SQL_PASSWORD,
+    port: env.SQL_PORT,
     pool: {
       min: 5,
       max: 50,
@@ -69,8 +71,8 @@ export function createDatabaseConfig(): sql.config {
     },
     options: {
       enableArithAbort: true,
-      trustServerCertificate: process.env.SQL_TRUST_CERT === 'true',
-      encrypt: process.env.SQL_ENCRYPT === 'true',
+      trustServerCertificate: env.SQL_TRUST_CERT,
+      encrypt: env.SQL_ENCRYPT,
       appName: 'sqlserver-mcp',
     },
   }

@@ -54,7 +54,10 @@ export const getFunctionSchemaInput = z.object({
 
 export const executeProcedureInput = z.object({
   procedureName: z.string().describe('Name of the stored procedure to execute'),
-  parameters: z.record(z.unknown()).optional().describe('Procedure parameters'),
+  parameters: z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe('Procedure parameters'),
   schemaName: z.string().default('dbo').describe('Schema name (default: dbo)'),
 })
 

@@ -1,5 +1,4 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   CallToolResult,
@@ -7,7 +6,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 
-import { createDatabaseConfig, DatabaseConnection } from './database'
+import { DatabaseConnection } from '../database'
 import type {
   ExecuteProcedureInput,
   ExecuteQueryInput,
@@ -17,8 +16,8 @@ import type {
   ListFunctionsInput,
   ListProceduresInput,
   ListTablesInput,
-} from './schemas'
-import { toolsSchemas } from './schemas'
+} from '../schemas'
+import { toolsSchemas } from '../schemas'
 import {
   executeProcedure,
   executeQuery,
@@ -30,17 +29,17 @@ import {
   listProcedures,
   listTables,
   toolsList,
-} from './tools'
+} from '../tools'
 
-type ToolName = keyof typeof toolsSchemas
+export type ToolName = keyof typeof toolsSchemas
 
-type ToolHandler = (
+export type ToolHandler = (
   database: DatabaseConnection,
   args: Record<string, unknown>
 ) => Promise<CallToolResult>
 
 export class SqlServerMCPService {
-  private server: Server
+  public server: Server
   private database: DatabaseConnection
   private toolHandlers: Map<string, ToolHandler>
   private availableTools = toolsList()
@@ -67,55 +66,47 @@ export class SqlServerMCPService {
   private createHandlerMap(): Map<string, ToolHandler> {
     const handlers = new Map<string, ToolHandler>()
 
-    handlers.set('get_database_info', async (database) => {
-      return await getDatabaseInfo(database)
-    })
+    handlers.set('get_database_info', async (database) =>
+      getDatabaseInfo(database)
+    )
 
     handlers.set('execute_query', async (database, args) => {
       const { query, parameters } = args as ExecuteQueryInput
-
       return await executeQuery(database, query, parameters ?? {})
     })
 
     handlers.set('execute_procedure', async (database, args) => {
       const { procedureName, parameters } = args as ExecuteProcedureInput
-
       return await executeProcedure(database, procedureName, parameters ?? {})
     })
 
     handlers.set('get_table_schema', async (database, args) => {
       const { tableName, schemaName } = args as GetTableSchemaInput
-
       return await getTableSchema(database, tableName, schemaName)
     })
 
     handlers.set('get_procedure_schema', async (database, args) => {
       const { procedureName, schemaName } = args as GetProcedureSchemaInput
-
       return await getProcedureSchema(database, procedureName, schemaName)
     })
 
     handlers.set('get_function_schema', async (database, args) => {
       const { functionName, schemaName } = args as GetFunctionSchemaInput
-
       return await getFunctionSchema(database, functionName, schemaName)
     })
 
     handlers.set('list_tables', async (database, args) => {
       const { schemaName } = args as ListTablesInput
-
       return await listTables(database, schemaName)
     })
 
     handlers.set('list_functions', async (database, args) => {
       const { schemaName, functionType } = args as ListFunctionsInput
-
       return await listFunctions(database, schemaName, functionType)
     })
 
     handlers.set('list_procedures', async (database, args) => {
       const { schemaName } = args as ListProceduresInput
-
       return await listProcedures(database, schemaName)
     })
 
@@ -124,39 +115,31 @@ export class SqlServerMCPService {
 
   private setupToolHandlers(): void {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      return {
-        tools: this.availableTools,
-      }
+      return { tools: this.availableTools }
     })
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         const baseSchema = z.object({
           name: z.string(),
-          arguments: z.record(z.any()),
+          arguments: z.record(z.string(), z.any()),
         })
 
         const { name, arguments: args } = baseSchema.parse(request.params)
 
         const inputSchema = toolsSchemas[name as ToolName]
 
-        if (!inputSchema) {
-          throw new Error(`Unknown tool: ${name}`)
-        }
+        if (!inputSchema) throw new Error(`Unknown tool: ${name}`)
 
         const parsedArgs = inputSchema.parse(args)
 
-        if (!this.database.isConnected()) {
-          await this.database.connect()
-        }
+        if (!this.database.isConnected()) await this.database.connect()
 
         const handler = this.toolHandlers.get(name)
 
-        if (!handler) {
-          throw new Error(`Handler not found: ${name}`)
-        }
+        if (!handler) throw new Error(`Handler not found: ${name}`)
 
-        const TIMEOUT_MS = 10_000 * 3
+        const TIMEOUT_MS = 30_000
 
         const result = await Promise.race([
           handler(this.database, parsedArgs),
@@ -187,47 +170,17 @@ export class SqlServerMCPService {
     this.toolHandlers.set(name, handler)
   }
 
-  public async start(): Promise<void> {
+  public async startWithStdio(): Promise<void> {
+    const { StdioServerTransport } = await import(
+      '@modelcontextprotocol/sdk/server/stdio.js'
+    )
+
     const transport = new StdioServerTransport()
+
     await this.server.connect(transport)
   }
 
   public async stop(): Promise<void> {
     await this.database.disconnect()
   }
-}
-
-async function main() {
-  const config = createDatabaseConfig()
-
-  const database = new DatabaseConnection(config)
-  const service = new SqlServerMCPService(database)
-
-  process.on('SIGINT', async () => {
-    console.log('Ending service...')
-
-    await service.stop()
-    process.exit(0)
-  })
-
-  process.on('SIGTERM', async () => {
-    console.log('Ending service...')
-
-    await service.stop()
-    process.exit(0)
-  })
-
-  try {
-    await service.start()
-  } catch (error) {
-    console.error('Error starting the service:', error)
-    process.exit(1)
-  }
-}
-
-if (require.main === module) {
-  main().catch((error) => {
-    console.error('Fatal error:', error)
-    process.exit(1)
-  })
 }

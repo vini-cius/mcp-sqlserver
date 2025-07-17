@@ -10,6 +10,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
 
-  dts: true,
   minify: process.env.NODE_ENV === 'production',
 })
