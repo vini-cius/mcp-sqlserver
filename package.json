@@ -1,9 +1,19 @@
 {
   "name": "sqlserver-mcp-service",
   "version": "1.0.0",
-  "description": "MCP service for executing queries in SQL Server",
+  "description": "MCP service for executing SQL Server queries via MCP protocol",
   "license": "MIT",
+  "author": {
+    "name": "Vinicius de Souza Santos",
+    "email": "viniciuskt0@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vini-cius/mcp-sqlserver.git"
+  },
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/vini-cius/mcp-sqlserver#readme",
   "bin": {
     "sqlserver-mcp": "dist/index.js"
   },
@@ -19,10 +29,6 @@
     "database",
     "typescript"
   ],
-  "author": {
-    "name": "Vinicius de Souza Santos",
-    "email": "viniciuskt0@gmail.com"
-  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
     "fastify": "^5.4.0",
