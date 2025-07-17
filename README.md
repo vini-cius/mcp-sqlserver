@@ -1,10 +1,10 @@
 # SQL Server MCP Service
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.18.0-brightgreen.svg)](https://nodejs.org/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
 
-A secure and robust Model Context Protocol (MCP) service for executing SQL Server queries through a standardized interface. This service provides a safe way to interact with SQL Server databases while preventing destructive operations and SQL injection attacks.
+A secure and robust Model Context Protocol (MCP) service for executing SQL Server queries via MCP protocol. This service provides a safe way to interact with SQL Server databases while preventing destructive operations and SQL injection attacks.
 
 ## 🚀 Features
 
@@ -148,14 +148,12 @@ Executes a stored procedure with parameters.
 ## 📦 Installation
 
 ### Prerequisites
-- Node.js >= 18.18.0
+- Node.js >= 20.0.0
 - SQL Server instance
-- npm or pnpm
+- pnpm (recommended)
 
 ### Install Dependencies
 ```bash
-npm install
-# or
 pnpm install
 ```
 
@@ -166,8 +164,26 @@ pnpm install
 cp .env.example .env
 ```
 
-2. **Configure Database Connection**
+2. **Configure Environment Variables**
+
+| Variable         | Description                                 | Default                      |
+|------------------|---------------------------------------------|------------------------------|
+| `HTTP_PORT`      | HTTP server port                            | `3333`                       |
+| `NODE_ENV`       | Node environment (`development`/`production`)| `development`                |
+| `ORIGIN`         | Allowed CORS origins (comma-separated)      | -                            |
+| `SQL_SERVER`     | SQL Server hostname/IP                      | `localhost`                  |
+| `SQL_DATABASE`   | Database name                               | `master`                     |
+| `SQL_USER`       | Database username                           | -                            |
+| `SQL_PASSWORD`   | Database password                           | -                            |
+| `SQL_PORT`       | SQL Server port                             | `1433`                       |
+| `SQL_ENCRYPT`    | Enable encryption                           | `true`                       |
+| `SQL_TRUST_CERT` | Trust server certificate                    | `false`                      |
+
+**Example .env:**
 ```env
+HTTP_PORT=3333
+NODE_ENV=development
+ORIGIN=http://localhost:3000,http://example.com
 SQL_SERVER=localhost
 SQL_DATABASE=master
 SQL_USER=sa
@@ -177,34 +193,23 @@ SQL_ENCRYPT=true
 SQL_TRUST_CERT=false
 ```
 
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `SQL_SERVER` | SQL Server hostname/IP | `localhost` |
-| `SQL_DATABASE` | Database name | `master` |
-| `SQL_USER` | Database username | `sa` |
-| `SQL_PASSWORD` | Database password | - |
-| `SQL_PORT` | SQL Server port | `1433` |
-| `SQL_ENCRYPT` | Enable encryption | `true` |
-| `SQL_TRUST_CERT` | Trust server certificate | `false` |
-
 ## 🚀 Usage
 
-### Development Mode
+### Start HTTP Server (Recommended)
 ```bash
-npm run dev
+pnpm run dev:http
+# or
+pnpm run start:http
 ```
 
-### Production Mode
+### Build for Production
 ```bash
-npm run build
-npm start
+pnpm run build
 ```
 
 ### Running Tests
 ```bash
-npm test
+pnpm run test
 ```
 
 ## 🔒 Security Features
@@ -234,57 +239,20 @@ The service automatically blocks potentially destructive operations:
 ### Parameter Sanitization
 All query and procedure parameters are automatically sanitized to prevent injection attacks.
 
-## 📁 Project Structure
-
-```
-mcp-sqlserver/
-├── src/
-│   ├── database.ts           # Database connection and config
-│   ├── index.ts              # Main service implementation
-│   ├── schemas.ts            # Zod schemas for validation
-│   └── tools/
-│       ├── execute-procedure.ts
-│       ├── execute-query.ts
-│       ├── get-database-info.ts
-│       ├── get-function-schema.ts
-│       ├── get-procedure-schema.ts
-│       ├── get-table-schema.ts
-│       ├── index.ts
-│       ├── list-functions.ts
-│       ├── list-procedures.ts
-│       └── list-tables.ts
-│   └── utils/
-│       ├── sanitize-parameters.ts
-│       └── validate-query.ts
-├── test/
-│   ├── database.test.ts
-│   ├── schemas.test.ts
-│   └── utils/
-│       ├── sanitize-parameters.test.ts
-│       └── validate-query.test.ts
-├── dist/                     # Compiled JavaScript
-├── package.json              # Project configuration
-├── tsconfig.json             # TypeScript configuration
-├── tsup.config.ts            # Build configuration
-├── jest.config.mjs           # Test configuration
-└── README.md                 # This file
-```
-
 ## 🧪 Testing
 
 The project includes comprehensive tests for schema validation and core functionality:
 
 ```bash
 # Run all tests
-npm test
+pnpm run test
 
 # Run tests in watch mode
-npm test -- --watch
+pnpm run test -- --watch
 
 # Run tests with coverage
-npm test -- --coverage
+pnpm run test -- --coverage
 ```
-
 
 ## 📝 License
 
