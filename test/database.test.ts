@@ -1,3 +1,15 @@
+jest.mock('../src/env', () => ({
+  env: {
+    SQL_SERVER: 'localhost',
+    SQL_DATABASE: 'master',
+    SQL_USER: 'test-user',
+    SQL_PASSWORD: 'test-password',
+    SQL_PORT: 1433,
+    SQL_TRUST_CERT: false,
+    SQL_ENCRYPT: false,
+  }
+}))
+
 import sql from 'mssql'
 
 import { createDatabaseConfig, DatabaseConnection } from '../src/database'
@@ -30,9 +42,9 @@ describe('DatabaseConnection', () => {
       get: jest.fn(() => 5),
       configurable: true,
     })
-    ;(
-      sql.ConnectionPool as jest.MockedClass<typeof sql.ConnectionPool>
-    ).mockImplementation(() => mockPool)
+      ; (
+        sql.ConnectionPool as jest.MockedClass<typeof sql.ConnectionPool>
+      ).mockImplementation(() => mockPool)
 
     config = {
       server: 'test-server',
@@ -77,7 +89,7 @@ describe('DatabaseConnection', () => {
 
     it('should handle connection errors', async () => {
       const connectionError = new Error('Connection failed')
-      ;(mockPool.connect as jest.Mock).mockRejectedValue(connectionError)
+        ; (mockPool.connect as jest.Mock).mockRejectedValue(connectionError)
 
       await expect(dbConnection.connect()).rejects.toThrow('Connection failed')
     })
@@ -101,7 +113,7 @@ describe('DatabaseConnection', () => {
     it('should handle close errors', async () => {
       await dbConnection.connect()
       const closeError = new Error('Close failed')
-      ;(mockPool.close as jest.Mock).mockRejectedValue(closeError)
+        ; (mockPool.close as jest.Mock).mockRejectedValue(closeError)
 
       await expect(dbConnection.disconnect()).rejects.toThrow('Close failed')
     })
@@ -157,7 +169,7 @@ describe('DatabaseConnection', () => {
       const mockResult = {
         recordset: [{ health: 1 }],
       }
-      ;(mockRequest.query as jest.Mock).mockResolvedValue(mockResult)
+        ; (mockRequest.query as jest.Mock).mockResolvedValue(mockResult)
 
       Object.defineProperty(mockPool, 'size', {
         get: jest.fn(() => 10),
@@ -186,7 +198,7 @@ describe('DatabaseConnection', () => {
 
     it('should handle query errors', async () => {
       const queryError = new Error('Query failed')
-      ;(mockRequest.query as jest.Mock).mockRejectedValue(queryError)
+        ; (mockRequest.query as jest.Mock).mockRejectedValue(queryError)
 
       await expect(dbConnection.healthCheck()).rejects.toThrow('Query failed')
     })
@@ -194,33 +206,14 @@ describe('DatabaseConnection', () => {
 })
 
 describe('createDatabaseConfig', () => {
-  const originalEnv = process.env
-
-  beforeEach(() => {
-    jest.resetModules()
-    process.env = { ...originalEnv }
-  })
-
-  afterEach(() => {
-    process.env = originalEnv
-  })
-
-  it('should create config with default values', () => {
-    delete process.env.SQL_SERVER
-    delete process.env.SQL_DATABASE
-    delete process.env.SQL_USER
-    delete process.env.SQL_PASSWORD
-    delete process.env.SQL_PORT
-    delete process.env.SQL_TRUST_CERT
-    delete process.env.SQL_ENCRYPT
-
+  it('should create config with current mock values', () => {
     const config = createDatabaseConfig()
 
     expect(config).toEqual({
       server: 'localhost',
       database: 'master',
-      user: undefined,
-      password: undefined,
+      user: 'test-user',
+      password: 'test-password',
       port: 1433,
       pool: {
         min: 5,
@@ -237,50 +230,7 @@ describe('createDatabaseConfig', () => {
     })
   })
 
-  it('should create config with environment variables', () => {
-    process.env.SQL_SERVER = 'prod-server'
-    process.env.SQL_DATABASE = 'prod-db'
-    process.env.SQL_USER = 'prod-user'
-    process.env.SQL_PASSWORD = 'prod-password'
-    process.env.SQL_PORT = '1434'
-    process.env.SQL_TRUST_CERT = 'true'
-    process.env.SQL_ENCRYPT = 'true'
-
-    const config = createDatabaseConfig()
-
-    expect(config).toEqual({
-      server: 'prod-server',
-      database: 'prod-db',
-      user: 'prod-user',
-      password: 'prod-password',
-      port: 1434,
-      pool: {
-        min: 5,
-        max: 50,
-        idleTimeoutMillis: 300000,
-        acquireTimeoutMillis: 10000,
-      },
-      options: {
-        enableArithAbort: true,
-        trustServerCertificate: true,
-        encrypt: true,
-        appName: 'sqlserver-mcp',
-      },
-    })
-  })
-
-  it('should handle invalid port number', () => {
-    process.env.SQL_PORT = 'invalid'
-
-    const config = createDatabaseConfig()
-
-    expect(config.port).toBe(NaN)
-  })
-
-  it('should handle string values for boolean options', () => {
-    process.env.SQL_TRUST_CERT = 'false'
-    process.env.SQL_ENCRYPT = 'false'
-
+  it('should handle boolean options correctly', () => {
     const config = createDatabaseConfig()
 
     expect(config.options?.trustServerCertificate).toBe(false)

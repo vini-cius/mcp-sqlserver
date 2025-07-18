@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 
 const envSchema = z.object({
   HTTP_PORT: z.coerce.number().default(3333),
-  NODE_ENV: z.enum(['development', 'production']).default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   ORIGIN: z.string().optional(),
   SQL_SERVER: z.string().default('localhost'),
   SQL_USER: z.string(),
