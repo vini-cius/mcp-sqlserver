@@ -212,6 +212,67 @@ pnpm run build
 pnpm run test
 ```
 
+## 🖥️ Desktop App Integration
+
+To integrate this server with a desktop app, add the following to your app's server configuration:
+
+### Using Node.js directly:
+```json
+{
+  "mcpServers": {
+    "sqlserver": {
+      "command": "node",
+      "args": [
+        "{ABSOLUTE PATH TO FILE HERE}/dist/cli.js"
+      ]
+    }
+  }
+}
+```
+
+### Using npx:
+```json
+{
+  "mcpServers": {
+    "sqlserver": {
+      "command": "npx",
+      "args": [
+        "mcp-mssql-server"
+      ]
+    }
+  }
+}
+```
+
+**Note:** Replace `{ABSOLUTE PATH TO FILE HERE}` with the actual absolute path to your project's `dist/cli.js` file.
+
+## 🤖 OpenAI Integration
+
+To use this MCP server with OpenAI's API, you can integrate it using the MCP protocol. Here's an example:
+
+```typescript
+import OpenAI from "openai";
+const client = new OpenAI();
+
+const resp = await client.responses.create({
+  model: "gpt-5",
+  tools: [
+    {
+      type: "mcp",
+      server_label: "mssql",
+      server_description: "A SQL Server MCP server for executing safe database queries and schema discovery.",
+      server_url: "http://localhost:3333/mcp",
+      require_approval: "never",
+    },
+  ],
+  input: "Show me all tables in the database",
+});
+
+console.log(resp.output_text);
+```
+
+**Note:** Make sure your HTTP server is running on the specified port before making requests to OpenAI.
+
 ## 🔒 Security Features
 
 ### Query Validation
